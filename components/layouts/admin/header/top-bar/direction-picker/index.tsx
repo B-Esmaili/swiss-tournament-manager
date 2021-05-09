@@ -1,18 +1,8 @@
 import { useUIContext } from "components/layouts/admin/context";
-import { Box, Button, Menu } from "grommet";
-import styled from "styled-components";
-
-const StyledMenu = styled(Menu)`
-  & * {
-    padding: 0px;
-  }
-`;
+import { Box, Button } from "grommet";
 
 const DirectionPicker: React.FC = () => {
-  let items = [
-    { name: "ltr", displayName: "LTR" },
-    { name: "rtl", displayName: "RTL" },
-  ];
+ 
 
   let {
     model: { dir },

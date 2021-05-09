@@ -12,15 +12,10 @@ import {
   ThemeContext,
 } from "grommet";
 import {
-  Configure,
-  CircleInformation,
+  Trophy,
+  Group,
   Dashboard,
-  Plan,
-  Inbox,
-  Local,
-  Resources,
-  ContactInfo,
-  BarChart,
+  CircleInformation,
 } from "grommet-icons";
 import { useUIContext } from "./context";
 import { SidebarState } from "./context/types";
@@ -39,64 +34,25 @@ const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
     {
       label: "Dashboard",
       icon: <Dashboard />,
+      link: "/"
     },
     {
-      label: "Components",
-      icon: <Resources />,
+      label: "Tournaments",
+      icon: <Trophy />,
+      link: "/tournaments"
     },
     {
-      link: "/forms",
-      label: "Form",
-      icon: <Local />,
-      items:[{
-        label: "Normal",
-        icon: <Resources />,
-      },{
-        label: "Advanced",
-        icon: <Resources />,
-        items : [
-          {
-            label: "Wizard Form",
-            icon: <Resources />,
-          },
-          {
-            label: "HTTP Form",
-            icon: <Resources />,
-          }
-        ]
-      }]
+      label: "Players",
+      icon: <Group />,
+      link: "/players"
     },
     {
-      link: "/user",
-      label: "User Profile",
-      icon: <ContactInfo />,
-    },
-    {
-      link: "/charts",
-      label: "Charts",
-      icon: <BarChart />,
-    },
-    {
-      link: "/inbox",
-      label: "Inbox",
-      icon: <Inbox />,
-    },
-    {
-      link: "/calendars",
-      label: "Calendar",
-      icon: <Plan />,
-    },
-    {
-      link: "/settings",
-      label: "Settings",
-      icon: <Configure />,
-    },
-    {
-      link: "/about",
       label: "About",
       icon: <CircleInformation />,
-    },
+      link: "/about"
+    }
   ];
+
   let [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(false);

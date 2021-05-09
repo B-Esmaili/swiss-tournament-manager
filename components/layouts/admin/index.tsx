@@ -2,8 +2,8 @@ import { Grommet } from "grommet";
 import { AdminLayoutProps } from "./types";
 import AdminLayoutRoot from "./layout";
 import useCustomTheme from "./theme/use-theme";
-import { UIContextProvider, useUIContext, UIContext } from "./context";
-import { UIContextModel, UIContextProviderValue } from "./context/types";
+import { UIContextProvider, UIContext } from "./context";
+import {  UIContextProviderValue } from "./context/types";
 
 const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
   const { children } = props;

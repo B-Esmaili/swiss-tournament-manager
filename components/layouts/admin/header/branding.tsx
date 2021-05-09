@@ -51,7 +51,7 @@ const Branding = () => {
           margin={{ start: "1em" }}
           truncate
         >
-          Admin Theme
+          Tournament Manager
         </Text>
       )}
     </AnimatedBox>

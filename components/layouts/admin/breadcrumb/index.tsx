@@ -40,7 +40,8 @@ const Breadcrumb: React.FC<BreadcrumbProps> = () => {
       }}
       direction="row"
       align="center"
-      flex="grow"
+      flex={false}
+      height="3em"
     >
       <Nav direction="row" align="center">
         {siteMap.map((item: string | SiteMapItem, i: number) => {
