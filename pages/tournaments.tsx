@@ -3,16 +3,16 @@ import { getTournaments } from "components/pages/tournaments/data";
 import { Tournament } from "components/pages/tournaments/types";
 import { db } from "db";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Box, Button, ColumnConfig } from "grommet";
+import { Box, Button, ColumnConfig, Text } from "grommet";
 import { DataTable } from "gromet-hook-form/lib/ui-extensions";
-import { FormBuilder, FormField } from "gromet-hook-form";
-//import { DataTable } from 'grommet';
+import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash } from "grommet-icons";
 
 const columns: ColumnConfig<Tournament>[] = [
   {
     property: "name",
     header: "Name",
+    render : ({id , name})=>(<Text> {id} - {name} </Text>)
   },
   {
     property: "numPlayers",
@@ -48,15 +48,38 @@ const columns: ColumnConfig<Tournament>[] = [
   },
 ];
 
-const tourFormFields : FormField [] =[
- 
-]
+const tourFormFields: FormField[] = [
+  {
+    name: "name",
+    label: "Name",
+    type: FormFieldType.Text,
+  },
+  {
+    name: "numPlayers",
+    label: "Number Of Players",
+    type: FormFieldType.Number,
+    defaultValue: 0,
+  },
+  {
+    name: "numRatedPlayers",
+    label: "Number Of Rated Players",
+    type: FormFieldType.Number,
+    defaultValue: 0,
+  },
+];
 
 const Toolbar = () => {
-  return (
-    <Box>
-      <FormBuilder fields={tourFormFields}>
+  const handleSubmit = (values: any) => {
+    db.table("tournaments").add(values);
+  };
 
+  return (
+    <Box width="medium" pad="small" height="auto" round="small" border={{
+      position:"right"
+
+    }}>
+      <FormBuilder fields={tourFormFields} onSubmit={handleSubmit}>
+        <Button icon={<Add />} label="add" type="submit" primary />
       </FormBuilder>
     </Box>
   );
@@ -67,23 +90,14 @@ const Tournaments = () => {
 
   return (
     <Layout>
-      <Box direction="row" justify="start">
-        <Button
-          icon={<Add />}
-          label="add"
-          primary
-          onClick={() => {
-            db.table("tournaments").add({
-              name: "asdasd",
-              numPlayers: 10,
-              numRatedPlayers: 320,
-            });
-          }}
-        />
-      </Box>
-      <Box>
+      <Box pad="small">
         {tournaments && (
           <DataTable
+            pad="small"
+            margin={{
+              left:"small"
+            }}
+            wrap={<Box direction="row"/>}
             toolbar={<Toolbar />}
             primaryKey="id"
             columns={columns}

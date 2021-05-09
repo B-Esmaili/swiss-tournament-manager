@@ -70,8 +70,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
 
   return (
     <Grid
-      fill
-      rows={["5rem", "flex"]}
+      fill="horizontal"      
+      rows={["5rem", "auto"]}
       columns={["auto", "flex"]}
       areas={[
         {
