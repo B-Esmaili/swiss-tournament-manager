@@ -31,7 +31,6 @@ const MessageBox: React.FC<MessageBoxProps> = (props) => {
 
   return (
     <>
-      {JSON.stringify(showMessage)}
       {showMessage && (
         <Layer
           position="bottom"

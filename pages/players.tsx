@@ -1,5 +1,5 @@
 import Layout from "components/layouts/admin";
-import { getTournaments } from "components/pages/tournaments/data";
+import { getPlayers } from "components/pages/players/data";
 import { db } from "db";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -13,9 +13,9 @@ import {
 } from "grommet";
 import { DataTable } from "gromet-hook-form/lib/ui-extensions";
 import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
-import { Add, Trash } from "grommet-icons";
+import { Add, Trash, Save } from "grommet-icons";
 import { Player } from "components/pages/players/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const columns: ColumnConfig<Player>[] = [
   {
@@ -99,16 +99,9 @@ const playersFormFields: FormField[] = [
     label: "FIDE Title",
     type: FormFieldType.DropDown,
     gridArea: "left",
-    options: [
-      "GM",
-      "IM",
-      "WGM",
-      "FM",
-      "WIM",
-      "CM",
-      "WFM",
-      "WCM",
-    ].map((e: any) => ({ text: e, value: e })),
+    options: ["GM", "IM", "WGM", "FM", "WIM", "CM", "WFM", "WCM"].map(
+      (e: any) => ({ text: e, value: e })
+    ),
     itemLabelKey: "text",
     itemValueKey: "value",
   },
@@ -165,16 +158,19 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   let { model } = props;
-  let [showMessage, setShowMessage] = useState<{
-    msg: string;
-    color: string;
-  } | null>(null);
+  let [localModel, setLocalModel] = useState(model);
+
+  let [showMessage, setShowMessage] =
+    useState<{
+      msg: string;
+      color: string;
+    } | null>(null);
 
   const handleSubmit = (values: any) => {
     if (values.id) {
-      db.table("tournaments").update(values.id, values);
+      db.table("players").update(values.id, values);
     } else {
-      db.table("tournaments").add(values);
+      db.table("players").add(values);
     }
     alert("Data Saved", "status-ok");
   };
@@ -182,6 +178,10 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   const alert = (msg: string, color: string) => {
     setShowMessage({ msg, color });
   };
+
+  useEffect(() => {
+    setLocalModel(model);
+  }, [model]);
 
   return (
     <Box
@@ -195,7 +195,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
     >
       <FormBuilder
         fields={playersFormFields}
-        model={model}
+        model={localModel}
         onSubmit={handleSubmit}
         rows={["flex", "2em"]}
         columns={["50%", "50%"]}
@@ -217,26 +217,48 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           },
         ]}
       >
-        <Button
-          gridArea="actions"
-          icon={<Add />}
-          label={model?.id ? "Update" : "Add"}
-          type="submit"
-          primary
-        />
-        {showMessage && (
-          <Layer
-            position="bottom"
-            onEsc={() => setShowMessage(null)}
-            onClickOutside={() => setShowMessage(null)}
-          >
-            <Box background={showMessage.color} pad="small">
-              <Box pad="small">
-                <Text> {showMessage.msg} </Text>
-              </Box>
-              <Button label="Ok" onClick={() => setShowMessage(null)} />
+        {(methods) => (
+          <>
+            <Box direction="row" fill gridArea="actions">
+              <Button
+                icon={localModel?.id ? <Save /> : <Save />}
+                label={localModel?.id ? "Update" : "Save"}
+                type="submit"
+                primary
+              />
+              {localModel?.id && (
+                <Button
+                  icon={<Add />}
+                  label="Add New"
+                  onClick={() =>{
+                    let m =   {...Object.keys(model as any).reduce(
+                      (p: any, c) => ((p[c] = ""), p),
+                      {}
+                    ),id: undefined};
+
+                    setLocalModel(m);
+                    return methods.reset(m)}
+                  }
+                  primary
+                />
+              )}
             </Box>
-          </Layer>
+
+            {showMessage && (
+              <Layer
+                position="bottom"
+                onEsc={() => setShowMessage(null)}
+                onClickOutside={() => setShowMessage(null)}
+              >
+                <Box background={showMessage.color} pad="small">
+                  <Box pad="small">
+                    <Text> {showMessage.msg} </Text>
+                  </Box>
+                  <Button label="Ok" onClick={() => setShowMessage(null)} />
+                </Box>
+              </Layer>
+            )}
+          </>
         )}
       </FormBuilder>
     </Box>
@@ -244,7 +266,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 };
 
 const Players = () => {
-  let tournaments = useLiveQuery(getTournaments, []);
+  let players = useLiveQuery(getPlayers, []);
   let [model, setModel] = useState<Player | null>(null);
 
   const handleRowClick = (e: MouseClick<Player> | KeyPress<Player>) => {
@@ -254,7 +276,7 @@ const Players = () => {
   return (
     <Layout>
       <Box pad="small">
-        {tournaments && (
+        {players && (
           <DataTable
             pad="small"
             margin={{
@@ -265,7 +287,7 @@ const Players = () => {
             toolbar={<Toolbar model={model ?? {}} />}
             primaryKey="id"
             columns={columns}
-            data={tournaments!}
+            data={players!}
           />
         )}
       </Box>

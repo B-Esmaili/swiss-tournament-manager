@@ -9,7 +9,6 @@ import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash } from "grommet-icons";
 import MessageBox from "components/utils";
 import { useState } from "react";
-import { Player } from "components/pages/players/types";
 
 const columns: ColumnConfig<Tournament>[] = [
   {
@@ -137,7 +136,7 @@ const Tournaments = () => {
             }}
             onClickRow={handleRowClick}
             wrap={<Box direction="row" />}
-            toolbar={<Toolbar model={model} />}
+            toolbar={<Toolbar model={model ?? {}} />}
             primaryKey="id"
             columns={columns}
             data={tournaments!}
