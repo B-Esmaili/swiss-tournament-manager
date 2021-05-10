@@ -2,7 +2,15 @@ import Layout from "components/layouts/admin";
 import { getTournaments } from "components/pages/tournaments/data";
 import { db } from "db";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Box, Button, ColumnConfig, MouseClick, Text, KeyPress } from "grommet";
+import {
+  Box,
+  Button,
+  ColumnConfig,
+  MouseClick,
+  Text,
+  KeyPress,
+  Layer,
+} from "grommet";
 import { DataTable } from "gromet-hook-form/lib/ui-extensions";
 import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash } from "grommet-icons";
@@ -91,11 +99,18 @@ const playersFormFields: FormField[] = [
     label: "FIDE Title",
     type: FormFieldType.DropDown,
     gridArea: "left",
-    options :[
-      "GM" , "IM" , "WGM" , "FM" , "WIM" ,  "CM" ,  "WFM" , "WCM"
-    ].map((e : any)=>({ text : e , value : e })),
-    itemLabelKey:"text",
-    itemValueKey:"value"
+    options: [
+      "GM",
+      "IM",
+      "WGM",
+      "FM",
+      "WIM",
+      "CM",
+      "WFM",
+      "WCM",
+    ].map((e: any) => ({ text: e, value: e })),
+    itemLabelKey: "text",
+    itemValueKey: "value",
   },
   {
     name: "sex",
@@ -103,7 +118,7 @@ const playersFormFields: FormField[] = [
     type: FormFieldType.DropDown,
     itemLabelKey: "text",
     itemValueKey: "value",
-    multiple:false,
+    multiple: false,
     options: [
       {
         text: "w",
@@ -145,14 +160,27 @@ const playersFormFields: FormField[] = [
 ];
 
 interface ToolbarProps {
-  model?: Player;
+  model?: Partial<Player>;
 }
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   let { model } = props;
+  let [showMessage, setShowMessage] = useState<{
+    msg: string;
+    color: string;
+  } | null>(null);
 
   const handleSubmit = (values: any) => {
-    db.table("tournaments").add(values);
+    if (values.id) {
+      db.table("tournaments").update(values.id, values);
+    } else {
+      db.table("tournaments").add(values);
+    }
+    alert("Data Saved", "status-ok");
+  };
+
+  const alert = (msg: string, color: string) => {
+    setShowMessage({ msg, color });
   };
 
   return (
@@ -196,6 +224,20 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
           type="submit"
           primary
         />
+        {showMessage && (
+          <Layer
+            position="bottom"
+            onEsc={() => setShowMessage(null)}
+            onClickOutside={() => setShowMessage(null)}
+          >
+            <Box background={showMessage.color} pad="small">
+              <Box pad="small">
+                <Text> {showMessage.msg} </Text>
+              </Box>
+              <Button label="Ok" onClick={() => setShowMessage(null)} />
+            </Box>
+          </Layer>
+        )}
       </FormBuilder>
     </Box>
   );
@@ -220,7 +262,7 @@ const Players = () => {
             }}
             onClickRow={handleRowClick}
             wrap={<Box direction="row" />}
-            toolbar={<Toolbar model={model} />}
+            toolbar={<Toolbar model={model ?? {}} />}
             primaryKey="id"
             columns={columns}
             data={tournaments!}

@@ -3,16 +3,24 @@ import { getTournaments } from "components/pages/tournaments/data";
 import { Tournament } from "components/pages/tournaments/types";
 import { db } from "db";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Box, Button, ColumnConfig, Text } from "grommet";
+import { Box, Button, ColumnConfig, KeyPress, MouseClick, Text } from "grommet";
 import { DataTable } from "gromet-hook-form/lib/ui-extensions";
 import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash } from "grommet-icons";
+import MessageBox from "components/utils";
+import { useState } from "react";
+import { Player } from "components/pages/players/types";
 
 const columns: ColumnConfig<Tournament>[] = [
   {
     property: "name",
     header: "Name",
-    render : ({id , name})=>(<Text> {id} - {name} </Text>)
+    render: ({ id, name }) => (
+      <Text>
+        {" "}
+        {id} - {name}{" "}
+      </Text>
+    ),
   },
   {
     property: "numPlayers",
@@ -68,17 +76,42 @@ const tourFormFields: FormField[] = [
   },
 ];
 
-const Toolbar = () => {
+interface ToolbarProps {
+  model?: Partial<Tournament>;
+}
+
+const Toolbar: React.FC<ToolbarProps> = (props) => {
+  let { model } = props;
+  let [msg, setMsg] = useState<null | any>(null);
+
   const handleSubmit = (values: any) => {
-    db.table("tournaments").add(values);
+    if (values.id) {
+      db.table("tournaments").update(values.id, values);
+    } else {
+      db.table("tournaments").add(values);
+    }
+    setMsg({
+      msg: "Data Saved",
+      color: "status-ok",
+    });
   };
 
   return (
-    <Box width="medium" pad="small" height="auto" round="small" border={{
-      position:"right"
-
-    }}>
-      <FormBuilder fields={tourFormFields} onSubmit={handleSubmit}>
+    <Box
+      width="medium"
+      pad="small"
+      height="auto"
+      round="small"
+      border={{
+        position: "right",
+      }}
+    >
+      <MessageBox {...msg} />
+      <FormBuilder
+        fields={tourFormFields}
+        onSubmit={handleSubmit}
+        model={model}
+      >
         <Button icon={<Add />} label="add" type="submit" primary />
       </FormBuilder>
     </Box>
@@ -87,6 +120,11 @@ const Toolbar = () => {
 
 const Tournaments = () => {
   let tournaments = useLiveQuery(getTournaments, []);
+  let [model, setModel] = useState<Tournament | null>(null);
+
+  const handleRowClick = (e: MouseClick<Tournament> | KeyPress<Tournament>) => {
+    setModel(e.datum);
+  };
 
   return (
     <Layout>
@@ -95,10 +133,11 @@ const Tournaments = () => {
           <DataTable
             pad="small"
             margin={{
-              left:"small"
+              left: "small",
             }}
-            wrap={<Box direction="row"/>}
-            toolbar={<Toolbar />}
+            onClickRow={handleRowClick}
+            wrap={<Box direction="row" />}
+            toolbar={<Toolbar model={model} />}
             primaryKey="id"
             columns={columns}
             data={tournaments!}
