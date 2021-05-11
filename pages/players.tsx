@@ -12,6 +12,10 @@ import {
   Layer,
 } from "grommet";
 import { DataTable } from "gromet-hook-form/lib/ui-extensions";
+import {
+  DataTableContext,
+  DataTableContextProvider,
+} from "gromet-hook-form/lib/components/extension/ui/data-table/data-context";
 import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash, Save } from "grommet-icons";
 import { Player } from "components/pages/players/types";
@@ -230,15 +234,18 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
                 <Button
                   icon={<Add />}
                   label="Add New"
-                  onClick={() =>{
-                    let m =   {...Object.keys(model as any).reduce(
-                      (p: any, c) => ((p[c] = ""), p),
-                      {}
-                    ),id: undefined};
+                  onClick={() => {
+                    let m = {
+                      ...Object.keys(model as any).reduce(
+                        (p: any, c) => ((p[c] = ""), p),
+                        {}
+                      ),
+                      id: undefined,
+                    };
 
                     setLocalModel(m);
-                    return methods.reset(m)}
-                  }
+                    return methods.reset(m);
+                  }}
                   primary
                 />
               )}
@@ -275,22 +282,28 @@ const Players = () => {
 
   return (
     <Layout>
-      <Box pad="small">
-        {players && (
-          <DataTable
-            pad="small"
-            margin={{
-              left: "small",
-            }}
-            onClickRow={handleRowClick}
-            wrap={<Box direction="row" />}
-            toolbar={<Toolbar model={model ?? {}} />}
-            primaryKey="id"
-            columns={columns}
-            data={players!}
-          />
-        )}
-      </Box>
+      <DataTableContextProvider>
+        <DataTableContext.Consumer>
+          {({dispatch}) => (
+            <Box pad="small">
+              {players && (
+                <DataTable
+                  pad="small"
+                  margin={{
+                    left: "small",
+                  }}
+                  onClickRow={handleRowClick}
+                  wrap={<Box direction="row" />}
+                  toolbar={<Toolbar model={model ?? {}} />}
+                  primaryKey="id"
+                  columns={columns}
+                  data={players!}
+                />
+              )}
+            </Box>
+          )}
+        </DataTableContext.Consumer>
+      </DataTableContextProvider>
     </Layout>
   );
 };
