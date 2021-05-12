@@ -19,7 +19,7 @@ import { DataTableContext, useDataTableContext } from "gromet-hook-form";
 import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash, Save } from "grommet-icons";
 import { Player } from "components/pages/players/types";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent,  useState } from "react";
 import { importPlayerFromTRF } from "utils";
 
 const columns: ColumnConfig<Player>[] = [
@@ -166,8 +166,7 @@ interface ToolbarProps {
   model?: Partial<Player>;
 }
 
-const Toolbar: React.FC<ToolbarProps> = (props) => {
-  let { model } = props;
+const Toolbar: React.FC<ToolbarProps> = () => {
 
   let {
     dispatch,
@@ -339,15 +338,7 @@ const Players = () => {
                 pad="small"
                 margin={{
                   left: "small",
-                }}
-                paginate={{
-                   type:"button-based",
-                   pageSize:20,
-                   enabled:true,
-                   pagerOptions : {
-                      step:20
-                   }
-                }}
+                }}                
                 select={selection}
                 onSelect={(s: (number | string)[]) => setSelection(s as any)}
                 onClickRow={handleRowClick}

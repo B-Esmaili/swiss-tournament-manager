@@ -11,7 +11,6 @@ import { SidebarState } from "./context/types";
 import { CustomThemeType } from "./theme";
 import Breadcrumb from "./breadcrumb";
 import styled from "styled-components";
-import { DataTableContextProvider } from "gromet-hook-form";
 
 const AnimatedSidebar = styled(Sidebar)`
   transition: width 0.3s ease;
