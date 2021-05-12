@@ -4,27 +4,17 @@ import Header from "./header";
 import { useContext, useEffect, useState } from "react";
 import { SideNavItemInfo } from "./side-nav/types";
 import { AdminLayoutProps } from "./types";
-import {
-  Box,
-  Header as HeaderAre,  
-  Sidebar,
-  Grid,
-  ThemeContext,
-} from "grommet";
-import {
-  Trophy,
-  Group,
-  Dashboard,
-  CircleInformation,
-} from "grommet-icons";
+import { Box, Header as HeaderAre, Sidebar, Grid, ThemeContext } from "grommet";
+import { Trophy, Group, Dashboard, CircleInformation } from "grommet-icons";
 import { useUIContext } from "./context";
 import { SidebarState } from "./context/types";
 import { CustomThemeType } from "./theme";
 import Breadcrumb from "./breadcrumb";
 import styled from "styled-components";
+import { DataTableContextProvider } from "gromet-hook-form";
 
 const AnimatedSidebar = styled(Sidebar)`
-    transition: width 0.3s ease;
+  transition: width 0.3s ease;
 `;
 
 const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
@@ -34,23 +24,23 @@ const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
     {
       label: "Dashboard",
       icon: <Dashboard />,
-      link: "/"
+      link: "/",
     },
     {
       label: "Tournaments",
       icon: <Trophy />,
-      link: "/tournaments"
+      link: "/tournaments",
     },
     {
       label: "Players",
       icon: <Group />,
-      link: "/players"
+      link: "/players",
     },
     {
       label: "About",
       icon: <CircleInformation />,
-      link: "/about"
-    }
+      link: "/about",
+    },
   ];
 
   let [loading, setLoading] = useState(true);
@@ -70,7 +60,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
 
   return (
     <Grid
-      fill="horizontal"      
+      fill="horizontal"
       rows={["5rem", "auto"]}
       columns={["auto", "flex"]}
       areas={[
@@ -103,9 +93,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = (props) => {
       </Box>
       <Box gridArea="main">
         <Breadcrumb />
-        <Box pad={{horizontal : "small" , bottom : "small"}}>
-          <Box background="light"
-             round="xsmall">{children}</Box>
+        <Box pad={{ horizontal: "small", bottom: "small" }}>
+          <Box background="light" round="xsmall">
+            {children}
+          </Box>
         </Box>
       </Box>
     </Grid>

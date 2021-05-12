@@ -10,16 +10,17 @@ import {
   Text,
   KeyPress,
   Layer,
+  Accordion,
+  AccordionPanel,
+  FileInput,
 } from "grommet";
 import { DataTable } from "gromet-hook-form/lib/ui-extensions";
-import {
-  DataTableContext,
-  DataTableContextProvider,
-} from "gromet-hook-form/lib/components/extension/ui/data-table/data-context";
+import { DataTableContext, useDataTableContext } from "gromet-hook-form";
 import { FormBuilder, FormField, FormFieldType } from "gromet-hook-form";
 import { Add, Trash, Save } from "grommet-icons";
 import { Player } from "components/pages/players/types";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { importPlayerFromTRF } from "utils";
 
 const columns: ColumnConfig<Player>[] = [
   {
@@ -97,6 +98,7 @@ const playersFormFields: FormField[] = [
     label: "Name",
     type: FormFieldType.Text,
     gridArea: "left",
+    defaultValue: "",
   },
   {
     name: "title",
@@ -108,6 +110,7 @@ const playersFormFields: FormField[] = [
     ),
     itemLabelKey: "text",
     itemValueKey: "value",
+    defaultValue: "",
   },
   {
     name: "sex",
@@ -127,6 +130,7 @@ const playersFormFields: FormField[] = [
       },
     ],
     gridArea: "left",
+    defaultValue: "",
   },
   {
     name: "fideRating",
@@ -140,6 +144,7 @@ const playersFormFields: FormField[] = [
     label: "FIDE Federation",
     type: FormFieldType.Text,
     gridArea: "right",
+    defaultValue: "",
   },
   {
     name: "fideNumber",
@@ -153,6 +158,7 @@ const playersFormFields: FormField[] = [
     label: "Birth Date",
     type: FormFieldType.Text,
     gridArea: "left",
+    defaultValue: "",
   },
 ];
 
@@ -162,7 +168,11 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   let { model } = props;
-  let [localModel, setLocalModel] = useState(model);
+
+  let {
+    dispatch,
+    state: { contextData },
+  } = useDataTableContext();
 
   let [showMessage, setShowMessage] =
     useState<{
@@ -176,16 +186,16 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
     } else {
       db.table("players").add(values);
     }
+    dispatch({
+      type: "merge-value",
+      payload: { contextData: { model: null } },
+    });
     alert("Data Saved", "status-ok");
   };
 
   const alert = (msg: string, color: string) => {
     setShowMessage({ msg, color });
   };
-
-  useEffect(() => {
-    setLocalModel(model);
-  }, [model]);
 
   return (
     <Box
@@ -199,7 +209,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
     >
       <FormBuilder
         fields={playersFormFields}
-        model={localModel}
+        model={contextData?.model}
         onSubmit={handleSubmit}
         rows={["flex", "2em"]}
         columns={["50%", "50%"]}
@@ -224,27 +234,25 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
         {(methods) => (
           <>
             <Box direction="row" fill gridArea="actions">
-              <Button
-                icon={localModel?.id ? <Save /> : <Save />}
-                label={localModel?.id ? "Update" : "Save"}
-                type="submit"
-                primary
-              />
-              {localModel?.id && (
+              {contextData?.model !== null && (
+                <Button
+                  icon={contextData?.model?.id ? <Save /> : <Save />}
+                  label={contextData?.model?.id ? "Update" : "Save"}
+                  type="submit"
+                  primary
+                />
+              )}
+              {contextData?.model != {} && (
                 <Button
                   icon={<Add />}
                   label="Add New"
+                  type="button"
                   onClick={() => {
-                    let m = {
-                      ...Object.keys(model as any).reduce(
-                        (p: any, c) => ((p[c] = ""), p),
-                        {}
-                      ),
-                      id: undefined,
-                    };
-
-                    setLocalModel(m);
-                    return methods.reset(m);
+                    dispatch({
+                      type: "merge-value",
+                      payload: { contextData: { model: {} } },
+                    });
+                    return methods.reset();
                   }}
                   primary
                 />
@@ -274,36 +282,85 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
 const Players = () => {
   let players = useLiveQuery(getPlayers, []);
-  let [model, setModel] = useState<Player | null>(null);
+  let { dispatch } = useDataTableContext();
 
   const handleRowClick = (e: MouseClick<Player> | KeyPress<Player>) => {
-    setModel(e.datum);
+    dispatch({
+      type: "merge-value",
+      payload: { contextData: { model: e.datum } },
+    });
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    let file = e.target.files![0];
+    let players = await importPlayerFromTRF(file);
+    db.table("players").bulkAdd(players);
+  };
+
+  const [selection, setSelection] = useState<number[]>([]);
+
+  const handleDeleteSelected = () => {
+    if (confirm("Are you sure?")) {
+      db.table("players").bulkDelete(selection);
+    }
   };
 
   return (
     <Layout>
-      <DataTableContextProvider>
-        <DataTableContext.Consumer>
-          {({dispatch}) => (
-            <Box pad="small">
-              {players && (
-                <DataTable
-                  pad="small"
-                  margin={{
-                    left: "small",
-                  }}
-                  onClickRow={handleRowClick}
-                  wrap={<Box direction="row" />}
-                  toolbar={<Toolbar model={model ?? {}} />}
-                  primaryKey="id"
-                  columns={columns}
-                  data={players!}
-                />
-              )}
+      <DataTableContext.Consumer>
+        {({ state: { contextData } }) => (
+          <Box pad="small">
+            <Box
+              direction="row"
+              fill
+              margin={{
+                bottom: "small",
+              }}
+            >
+              <Box fill>
+                <Accordion>
+                  <AccordionPanel label="Import from TRF">
+                    <FileInput onChange={handleFileChange} />
+                  </AccordionPanel>
+                </Accordion>
+              </Box>
+              <Box width="10em">
+                {selection.length > 0 && (
+                  <Button
+                    label="Delete Selected"
+                    color="status-error"
+                    onClick={handleDeleteSelected}
+                  />
+                )}
+              </Box>
             </Box>
-          )}
-        </DataTableContext.Consumer>
-      </DataTableContextProvider>
+            {players && (
+              <DataTable
+                pad="small"
+                margin={{
+                  left: "small",
+                }}
+                paginate={{
+                   type:"button-based",
+                   pageSize:20,
+                   enabled:true,
+                   pagerOptions : {
+                      step:20
+                   }
+                }}
+                select={selection}
+                onSelect={(s: (number | string)[]) => setSelection(s as any)}
+                onClickRow={handleRowClick}
+                wrap={<Box direction="row" />}
+                toolbar={<Toolbar model={contextData?.model ?? {}} />}
+                primaryKey="id"
+                columns={columns}
+                data={players!}
+              />
+            )}
+          </Box>
+        )}
+      </DataTableContext.Consumer>
     </Layout>
   );
 };

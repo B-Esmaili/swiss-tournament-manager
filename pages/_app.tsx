@@ -3,6 +3,7 @@ import { Grommet } from 'grommet';
 import {FabricTheme} from 'themes/fabric';
 import { AppContextProvider } from 'context/app-context';
 import {initDb} from '../db';
+import { DataTableContextProvider } from 'gromet-hook-form';
 
 initDb();
 
@@ -12,7 +13,9 @@ export default class MyApp extends App {
     return (
       <Grommet theme={FabricTheme}>
         <AppContextProvider>
+          <DataTableContextProvider>
            <Component {...pageProps} />
+           </DataTableContextProvider>
         </AppContextProvider>
       </Grommet>
     )
